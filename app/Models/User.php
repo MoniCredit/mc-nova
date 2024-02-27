@@ -42,4 +42,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+        static::creating(function ($user) {
+            $user->id = uniqid('US');
+        });
+    }
 }
