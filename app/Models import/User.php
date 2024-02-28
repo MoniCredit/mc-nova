@@ -1,20 +1,31 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\Carbon;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Auth;
+ 
+// Audit Log
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasPermissions;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Gate;
+use OwenIt\Auditing\Contracts\Auditable;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject, Auditable
 {
     use HasApiTokens;
     use HasFactory;
     use Notifiable;
-    // use HasRoles;
-    // use HasPermissions;
+    use HasRoles;
+    use HasPermissions;
+    use \OwenIt\Auditing\Auditable;
 
     protected $keyType = 'string';
     public $incrementing = false;
@@ -24,22 +35,23 @@ class User extends Authenticatable
         "active"  => "ACTIVE",
 
     ];
+    
+
+    // protected $appends = [
+    //     'permission'
+    // ];
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var string[]
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -71,18 +83,71 @@ class User extends Authenticatable
     /**
      * The attributes that should be cast.
      *
-     * @var array<string, string>
+     * @var array
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
     public static function boot()
     {
         parent::boot();
-        static::creating(function ($user) {
-            $user->id = uniqid('US');
-        });
+        // static::creating(function ($user) {
+        //     $user->id = uniqid('US');
+        // });
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->morphToMany(
+            config('permission.models.role'),
+            'model',
+            config('permission.table_names.model_has_roles'),
+            config('permission.column_names.model_morph_key'),
+            'role_id'
+        )
+        ->where('model_has_roles.account_id', Auth::user()->active_account)
+        ;
+    }
+    public function allRoles(): BelongsToMany
+    {
+        return $this->morphToMany(
+            config('permission.models.role'),
+            'model',
+            config('permission.table_names.model_has_roles'),
+            config('permission.column_names.model_morph_key'),
+            'role_id'
+        )->with('permissions');
+    }
+    public function allPermissions()
+    {
+        return $this->morphToMany(
+            config('permission.models.permission'),
+            'model',
+            config('permission.table_names.model_has_permissions'),
+            config('permission.column_names.model_morph_key'),
+            'permission_id'
+        );
+    }
+
+    public function account()
+    {
+        return $this->hasMany(Account::class, 'user_id');
+    }
+
+    public function getPermissionAttribute()
+    {
+        return $this->getAllPermissions();
     }
 
     /**
