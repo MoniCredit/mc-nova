@@ -7,11 +7,14 @@
     "require": {
         "php": "^8.1",
         "guzzlehttp/guzzle": "^7.2",
+        "kyslik/column-sortable": "^6.6",
         "laravel/framework": "^10.10",
         "laravel/nova": "^4.0",
         "laravel/pulse": "^1.0@beta",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "owen-it/laravel-auditing": "^13.6",
+        "spatie/laravel-permission": "^6.7",
         "stancl/tenancy": "^3.7"
     },
     "require-dev": {
