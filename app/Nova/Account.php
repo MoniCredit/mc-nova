@@ -13,7 +13,7 @@ class Account extends Resource
      *
      * @var class-string<\App\Models\account>
      */
-    public static $model = \App\Models\account::class;
+    public static $model = \App\Models\Account::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.
