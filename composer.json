@@ -9,6 +9,7 @@
         "guzzlehttp/guzzle": "^7.2",
         "kyslik/column-sortable": "^6.6",
         "laravel/framework": "^10.10",
+        "laravel/nova": "^4.0",
         "laravel/pulse": "^1.0@beta",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
@@ -67,6 +68,12 @@
         }
     },
     "minimum-stability": "beta",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": {
+        "nova": {
+            "type": "composer",
+            "url": "https://nova.laravel.com"
+        }
+    }
     
 }
